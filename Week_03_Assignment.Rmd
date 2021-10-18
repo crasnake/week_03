@@ -20,8 +20,15 @@ library(here)
 vehicles <- read_csv(here::here("Data", "vehicles.csv"),
                      col_types = cols(.default = "c"))
 ```
+```{r}
+vehicles
+```
+```{r}
+glimpse(vehicles)
+```
 
 Describe what is happening in the `col_types` parameter. Why do you think this is necessary?
+#The col_types parameter is showing the headings as "character" or c as the default. This is telling readr how to load the data. This helps to have consistent and reproducible data import script. If you use default guesses and data changes it will continue reading it as the guess.
 
 2. Create a reduced version of the dataset that includes the following fields:
 
@@ -42,8 +49,32 @@ Ensure that the `year`, fuelCost08`, `highway08`, `city08`, and `feScore` fields
 Assign this to a new dataframe called `vehicles_sub`.
 
 ```{r}
+vehicles_sub<- select(vehicles, make, model, year, cylinders, drive, trany, evMotor, fuelCost08, highway08, city08, feScore)
+```
+```{r}
+vehicles_sub
+```
+```{r}
+vehicles_sub %>%
+  select(make, model, year, cylinders, drive, trany, evMotor, fuelCost08, highway08, city08, feScore)
+```
+```{r}
+mutate(vehicles_sub, 
+       year = as.double(year))
+```
+```{r}
+vehicles_sub<- vehicles %>% 
+  select(make, model, year, cylinders, drive, trany, evMotor, fuelCost08, highway08, city08, feScore) %>%
+  mutate(year = as.double(year),
+         fuelCost08 = as.double(fuelCost08),
+         highway08 = as.double(highway08),
+         city08 = as.double(city08),
+         feScore = as.double(feScore))
+```
+```{r}
 
 ```
+
 
 3. Conduct an exploratory analysis of each field in the dataset. This should include:
 
@@ -56,37 +87,52 @@ Indicate anything interesting that you notice.
 *Hint: When finding counts of fields, sometimes it is helpful to sort the field from highest to lowest values.*
 
 ```{r}
-
-```
-
-
-```{r}
-
+vehicles_sub %>% summarize(vehicles_sub)
 ```
 
 ```{r}
-
+vehicles_sub %>% summary()
 ```
+
+```{r}
+vehicles_sub %>%
+  count(year)
+```
+```{r}
+vehicles_sub %>%
+  group_by(year) %>% 
+  summarize(count = n()) %>% 
+  ungroup() %>% 
+  arrange(desc(count))
+```
+
 
 4. Some of the fields need to be cleaned to ease analysis. 
 
 - Create a new field in `vehicles_sub` called `evMotor_flag` that indicates whether or not the vehicle has an electric motor.
 
 ```{r}
-
+mutate(vehicles_sub,
+       evMotor_flag = FALSE)
 ```
-
 
 5. Create a graph that demonstrates how median city mileage has changed over time.
 
 ```{r}
-
+vehicles_sub %>% 
+  filter() %>% 
+  group_by(year) %>% 
+  summarize(city08 = median(city08, na.rm = T)) %>% 
+  ungroup() %>% 
+  ggplot(aes(x = year,
+             y = city08)) +
+  geom_line()
 ```
 
 6. Consider the top 5 car makes whose fuel economies have been evaluated most frequently. Create a graph that demonstrates how the city fuel mileage has changed over time for these makes.
 
 ```{r}
-
+#where is the evaluation?
 ```
 
 7. Create a question about the dataset that must be solved by using the `dplyr` verbs - `select`, `mutate`, `summarize`, `arrange`, etc.
@@ -95,8 +141,26 @@ Indicate anything interesting that you notice.
 -   Create a graph that assists in answering the question.
 -   Write a short interpretation of the graph in order to answer your question.
 
+Which cylinders in all cars have the best fuel economy score?
+
+```{r}
+vehicles_sub %>% 
+  filter() %>% 
+  group_by(cylinders) %>% 
+  summarize(feScore = mean(feScore), na.rm = T) %>% 
+  ungroup() %>% 
+  ggplot(aes(x = cylinders,
+             y = feScore)) +
+  geom_col()
+```
+This graph demonstrates that 3 engine cylinders have the higher average of other cylinders. NA has the highest but this result is skewed because the data hasn't been dispersed.3 engine cylinders have about 3 feScore while 5 cylinders have the lowest score.
+
 8. Submit the following information about the project you would like to solve for your course project:
 
 *   The dataset(s) you will be utilizing to perform your analysis. This may be Slacked or emailed to me separately from this document. You may include a direct link to the dataset, a file, the API you intend to extract the data from, or the 
 *   The business question that you intend to answer through your analysis.
 *   A high level description of how you intend to answer the proposed business question.
+
+I intend to use a dataset I need to de-identify, I will email it to you. 
+The question is: how does Sparta Score, Jump Height, & Body Weight change over a competitive season?
+I intend to look at football & field hockey changes in force plate data to better identify fatigue during the competitive season. I want to look at how the scores either perform in unison linearly or are inverse of each other, or if the values never change.
